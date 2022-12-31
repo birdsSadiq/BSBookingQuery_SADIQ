@@ -1,5 +1,7 @@
 ﻿using Booking.Data;
+using Booking.Data.Repository;
 using Booking.Model;
+using Booking.Web.helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,29 +11,31 @@ namespace Booking.Web.Controllers
 {
     public class HotelCommentController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext db;
+        private readonly IUnitOfWork uow;
 
-        public HotelCommentController(ApplicationDbContext context)
+        public HotelCommentController(ApplicationDbContext context, IUnitOfWork uow)
         {
-            _context = context;
+            this.db = context;
+            this.uow = uow;
         }
 
         // GET: HotelComment
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int id = 0, string user = "")
         {
-            var applicationDbContext = _context.HotelComment.Include(h => h.Hotel);
+            var applicationDbContext = db.HotelComment.Where(d => d.HotelId == id).Include(h => h.Hotel).OrderByDescending(d => d.Id);
             return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: HotelComment/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.HotelComment == null)
+            if (id == null || db.HotelComment == null)
             {
                 return NotFound();
             }
 
-            var hotelComment = await _context.HotelComment
+            var hotelComment = await db.HotelComment
                 .Include(h => h.Hotel)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (hotelComment == null)
@@ -42,52 +46,15 @@ namespace Booking.Web.Controllers
             return View(hotelComment);
         }
 
-        // GET: HotelComment/Create
-        public IActionResult Create(int id = 0)
+        // GET: HotelComment/Edit/5
+        public async Task<IActionResult> Edit(int id = 0)
         {
             HotelComment model = new HotelComment();
+            model.HotelId = id;
+            model.UserName= User.FindFirstValue(ClaimTypes.Name);
+            model.EntryDateTime = DateTime.Now;
             model.Show = true;
-            model.UserName = User.FindFirstValue(ClaimTypes.Name);
-            model.HotelId=id;
-
-            ViewData["HotelId"] = new SelectList(_context.Hotel, "Id", "Name");
             return View(model);
-        }
-
-        // POST: HotelComment/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,HotelId,Name,Show,UserName")] HotelComment model)
-        {
-            if (ModelState.IsValid)
-            {
-                model.UserName = User.FindFirstValue(ClaimTypes.Name);
-                model.EntryDateTime = DateTime.Now;                
-                _context.Add(model);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["HotelId"] = new SelectList(_context.Hotel, "Id", "Name", model.HotelId);
-            return View(model);
-        }
-
-        // GET: HotelComment/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.HotelComment == null)
-            {
-                return NotFound();
-            }
-
-            var hotelComment = await _context.HotelComment.FindAsync(id);
-            if (hotelComment == null)
-            {
-                return NotFound();
-            }
-            ViewData["HotelId"] = new SelectList(_context.Hotel, "Id", "Name", hotelComment.HotelId);
-            return View(hotelComment);
         }
 
         // POST: HotelComment/Edit/5
@@ -97,46 +64,39 @@ namespace Booking.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,HotelId,Name,Show")] HotelComment model)
         {
-            if (id != model.Id)
+            string msg = "Something went wrong!";
+            try
             {
-                return NotFound();
+                msg = "Saved Successfully";
+                model.EntryDateTime = DateTime.Now;
+                model.UserName = User.FindFirstValue(ClaimTypes.Name);
+                uow.HotelCommentRepository.Add(model);//add
+                bool status = await uow.SaveAsync();
             }
-
-            if (ModelState.IsValid)
+            catch (DbUpdateConcurrencyException)
             {
-                try
+                if (!IsModelExists(model.Id))
                 {
-                    model.UserName = User.FindFirstValue(ClaimTypes.Name);
-                    model.EntryDateTime = DateTime.Now;
-                    _context.Update(model);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!HotelCommentExists(model.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["HotelId"] = new SelectList(_context.Hotel, "Id", "Name", model.HotelId);
-            return View(model);
+            var models = uow.HotelCommentRepository.GetAllAsync(model.HotelId ?? 0);
+            return Json(new { isValid = true, message = msg, html = Helper.RenderRazorViewToString(this, "_ViewAll", models.Result.ToList()) });
         }
 
         // GET: HotelComment/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.HotelComment == null)
+            if (id == null || db.HotelComment == null)
             {
                 return NotFound();
             }
 
-            var hotelComment = await _context.HotelComment
+            var hotelComment = await db.HotelComment
                 .Include(h => h.Hotel)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (hotelComment == null)
@@ -152,23 +112,23 @@ namespace Booking.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.HotelComment == null)
+            if (db.HotelComment == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.HotelComment'  is null.");
             }
-            var hotelComment = await _context.HotelComment.FindAsync(id);
+            var hotelComment = await db.HotelComment.FindAsync(id);
             if (hotelComment != null)
             {
-                _context.HotelComment.Remove(hotelComment);
+                db.HotelComment.Remove(hotelComment);
             }
 
-            await _context.SaveChangesAsync();
+            await db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool HotelCommentExists(int id)
+        private bool IsModelExists(int id)
         {
-            return _context.HotelComment.Any(e => e.Id == id);
+            return db.HotelComment.Any(e => e.Id == id);
         }
     }
 }

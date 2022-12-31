@@ -79,3 +79,25 @@ jQueryAjaxDelete = form => {
     }
     return false;//prevent default form submit event
 }
+
+$(document).on('click', '#btnSearchHotelList', function () {
+
+    var rf = 0;
+    var rt = 0;
+    var city = $('#sCity').val();
+    var country = $('#sCountry').val();
+    if ($.isNumeric($('#rf').val())) { rf = parseInt($('#rf').val()); }
+    if ($.isNumeric($('#rt').val())) { rt = parseInt($('#rt').val()); }
+    $.ajax({
+        type: 'POST',
+        url: '@url.Action("Hotel", "GetSearchList")', /*url: '../Hotel/GetSearchList',*/
+        data: { city: city, country: country, rf: rf, rt: rt },
+        success: function (res) {
+            $('#dvViewAll').html(res.html);
+        },
+        error: function (err) {
+            console.log(err)
+        }
+    })
+
+});

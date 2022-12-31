@@ -1,20 +1,17 @@
 ﻿@model Booking.Model.HotelComment
 
 @{
-    ViewData["Title"] = "Edit";
+    Layout = null;
 }
 
-<h1>Edit</h1>
-
-<h4>HotelComment</h4>
-<hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-12">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="EntryDateTime" />
             <input type="hidden" asp-for="UserName" />
+            <input type="hidden" asp-for="Show" />
 
             <div class="form-group">
                 <label asp-for="HotelId" class="control-label"></label>
@@ -26,11 +23,7 @@
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Show" /> @Html.DisplayNameFor(model => model.Show)
-                </label>
-            </div>
+            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -38,10 +31,3 @@
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

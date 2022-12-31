@@ -52,6 +52,7 @@ namespace Booking.Model
         public string UserName { get; set; } = "";
         #endregion
         #region DateTime
+        [Display(Name = "Created On")]
         public DateTime EntryDateTime { get; set; }
         #endregion
 

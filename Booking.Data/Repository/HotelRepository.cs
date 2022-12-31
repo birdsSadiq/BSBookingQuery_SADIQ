@@ -52,7 +52,7 @@ namespace Booking.Data.Repository
             return await dc.Hotel.Where(d => d.Id > 0
             && (!string.IsNullOrEmpty(city) ? d.City == city : true)
             && (!string.IsNullOrEmpty(country) ? d.Country == country : true)
-            && ((rf > 0 && rt > 0) ? (d.Rating > rf && d.Rating < rt) : true)).ToListAsync();
+            && ((rf >= 0 && rt >= 0) ? (d.Rating > rf && d.Rating < rt) : true)).ToListAsync();
         }
         public async Task<IEnumerable<Hotel>> GetAllAsync()
         {

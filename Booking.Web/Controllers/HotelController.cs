@@ -12,12 +12,12 @@ namespace Booking.Web.Controllers
 {
     public class HotelController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext db;
         private readonly IUnitOfWork uow;
 
-        public HotelController(ApplicationDbContext context, IUnitOfWork uow)
+        public HotelController(ApplicationDbContext db, IUnitOfWork uow)
         {
-            _context = context;
+            this.db = db;
             this.uow = uow;
         }
 
@@ -25,21 +25,21 @@ namespace Booking.Web.Controllers
         public async Task<IActionResult> Index()
         {
 
-            ViewData["City"] = new SelectList(_context.Hotel, "City", "City");
-            ViewData["Country"] = new SelectList(_context.Hotel, "Country", "Country");
+            ViewData["City"] = new SelectList(db.Hotel, "City", "City");
+            ViewData["Country"] = new SelectList(db.Hotel, "Country", "Country");
 
-            return View(await _context.Hotel.ToListAsync());
+            return View(await db.Hotel.ToListAsync());
         }
 
         // GET: Hotel/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Hotel == null)
+            if (id == null || db.Hotel == null)
             {
                 return NotFound();
             }
 
-            var hotel = await _context.Hotel
+            var hotel = await db.Hotel
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (hotel == null)
             {
@@ -49,76 +49,52 @@ namespace Booking.Web.Controllers
             return View(hotel);
         }
 
-        // GET: Hotel/Create
-        [Authorize]
-        public IActionResult Create()
-        {
-            Hotel model = new Hotel();
-            model.UserName = User.FindFirstValue(ClaimTypes.Name);
-            return View();
-        }
-
-        // POST: Hotel/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Rating,City,Country,Address")] Hotel model)
-        {
-            if (ModelState.IsValid)
-            {
-                model.UserName = User.FindFirstValue(ClaimTypes.Name);
-                model.EntryDateTime = DateTime.Now;
-                _context.Add(model);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(model);
-        }
-
         // GET: Hotel/Edit/5
         [Authorize]
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id = 0)
         {
-            if (id == null || _context.Hotel == null)
+            if (id == 0)
             {
-                return NotFound();
+                Hotel model = new Hotel();
+                return View(model);
             }
-
-            var hotel = await _context.Hotel.FindAsync(id);
-            if (hotel == null)
+            else
             {
-                return NotFound();
+                var model = uow.HotelRepository.GetById(id);
+                if (model == null)
+                {
+                    return NotFound();
+                }
+                return View(model);
             }
-            return View(hotel);
         }
 
         // POST: Hotel/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Rating,City,Country,Address")] Hotel model)
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
-
+            string msg = "Something went wrong!";
             if (ModelState.IsValid)
             {
                 try
                 {
-                    model.UserName = User.FindFirstValue(ClaimTypes.Name);
-                    model.EntryDateTime = DateTime.Now;
-                    _context.Update(model);
-                    await _context.SaveChangesAsync();
+                    if (id == 0)
+                    {
+                        msg = "Saved Successfully";
+                        uow.HotelRepository.Add(model);//add
+                    }
+                    else
+                    {
+                        msg = "Updated Successfully";
+                        uow.HotelRepository.Update(model);//update
+                    }
+                    bool status = await uow.SaveAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!HotelExists(model.Id))
+                    if (!IsModelExists(model.Id))
                     {
                         return NotFound();
                     }
@@ -127,28 +103,11 @@ namespace Booking.Web.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                var models = uow.HotelRepository.GetAllAsync();
+                return Json(new { isValid = true, message = msg, html = Helper.RenderRazorViewToString(this, "_ViewAll", models.Result.ToList()) });
             }
-            return View(model);
-        }
+            return Json(new { isValid = false, message = "Something went wrong!", html = Helper.RenderRazorViewToString(this, "Edit", model) });
 
-        // GET: Hotel/Delete/5
-        [Authorize]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Hotel == null)
-            {
-                return NotFound();
-            }
-
-            var hotel = await _context.Hotel
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-
-            return View(hotel);
         }
 
         // POST: Hotel/Delete/5
@@ -157,23 +116,22 @@ namespace Booking.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Hotel == null)
+            if (!uow.HotelRepository.IsModelExist(id))
             {
-                return Problem("Entity set 'ApplicationDbContext.Hotel'  is null.");
+                return Problem("Not Found.");
             }
-            var hotel = await _context.Hotel.FindAsync(id);
-            if (hotel != null)
+            var model = uow.HotelRepository.GetById(id);
+            if (model != null)
             {
-                _context.Hotel.Remove(hotel);
+                uow.HotelRepository.Delete(id);
+                var result = uow.SaveAsync();
             }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return Json(new { isValid = true, message = "Deleted Successfully", html = Helper.RenderRazorViewToString(this, "_ViewAll", db.Hotel.ToList()) });
         }
 
-        private bool HotelExists(int id)
+        private bool IsModelExists(int id)
         {
-            return _context.Hotel.Any(e => e.Id == id);
+            return uow.HotelRepository.IsModelExist(id);
         }
         public async Task<IActionResult> GetSearchList(string city, string country, int rf, int rt)
         {

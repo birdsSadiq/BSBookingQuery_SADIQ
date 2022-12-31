@@ -23,7 +23,7 @@
             <label class="control-label">Rating</label>
             <div class="row">
                 <div class="col-md-5">
-                    <input type="number" name="sRF" id="sRF" class="form-control" /> TO
+                    <input type="number" name="sRF" id="sRF" class="form-control" />
                 </div>
                 <div class="col-md-2">
                     TO
@@ -36,40 +36,19 @@
     </div>
     <div class="col-md-3">
         <div class="form-group">
-            <input type="button" id="btnSearch" value="Search" class="btn btn-primary" />
+            <br />
+            <input type="button" id="btnSearchHotelList" value="Search" class="btn btn-sm btn-primary" />
         </div>
     </div>
 </div>
-
+<hr />
 <div id="dvViewAll">
     @await Html.PartialAsync("_viewAll",Model)
 </div>
 
-@section scripts{
-    <script>
-        $(document).on('click', '#btnSearch', function() {
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+ }
 
-            var rf = 0;
-            var rt = 0;
-            var city = $('#sCity').val();
-            var country = $('#sCountry').val();
-            if ($.isNumeric($('#rf').val())) { rf = parseInt($('#rf').val()); }
-            if ($.isNumeric($('#rt').val())) { rt = parseInt($('#rt').val()); }
-
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("GetSearchList")',
-                data: new FormData(form),
-                data: { city: city, country: country, rf: rf, rt: rt },
-                success: function(res) {
-                    $('#dvViewAll').html(res.html);
-                },
-                error: function(err) {
-                    console.log(err)
-                }
-            })
-
-        });
-    </script>
-
-}

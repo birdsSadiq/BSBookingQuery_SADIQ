@@ -25,8 +25,6 @@
     <None Include="Views\HotelComment\Details.cshtml" />
     <None Include="Views\HotelComment\Edit.cshtml" />
     <None Include="Views\HotelComment\Index.cshtml" />
-    <None Include="Views\Hotel\Create.cshtml" />
-    <None Include="Views\Hotel\Delete.cshtml" />
     <None Include="Views\Hotel\Details.cshtml" />
     <None Include="Views\Hotel\Edit.cshtml" />
     <None Include="Views\Hotel\Index.cshtml" />
