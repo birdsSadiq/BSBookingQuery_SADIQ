@@ -1,6 +1,7 @@
 ﻿using Booking.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace Booking.Web.Controllers
 {
@@ -20,6 +21,9 @@ namespace Booking.Web.Controllers
 
         public IActionResult Privacy()
         {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // will give the user's userId
+            var userName = User.FindFirstValue(ClaimTypes.Name); // will give the user's userName
             return View();
         }
 

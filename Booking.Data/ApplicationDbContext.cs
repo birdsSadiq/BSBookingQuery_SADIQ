@@ -12,6 +12,9 @@ namespace Booking.Data
         }
 
         #region tables
+        public DbSet<Hotel> Hotel { get; set; }
+        public DbSet<HotelComment> HotelComment { get; set; }
+        public DbSet<HotelCommentReply> HotelCommentReply { get; set; }
         public DbSet<Demo> Demo { get; set; }
         #endregion
     }
