@@ -20,9 +20,6 @@
     <None Include="Views\HotelCommentReply\Details.cshtml" />
     <None Include="Views\HotelCommentReply\Edit.cshtml" />
     <None Include="Views\HotelCommentReply\Index.cshtml" />
-    <None Include="Views\HotelComment\Create.cshtml" />
-    <None Include="Views\HotelComment\Delete.cshtml" />
-    <None Include="Views\HotelComment\Details.cshtml" />
     <None Include="Views\HotelComment\Edit.cshtml" />
     <None Include="Views\HotelComment\Index.cshtml" />
     <None Include="Views\Hotel\Details.cshtml" />

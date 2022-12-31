@@ -83,11 +83,13 @@ namespace Booking.Web.Controllers
                     if (id == 0)
                     {
                         msg = "Saved Successfully";
+                        model.UserName = User.FindFirstValue(ClaimTypes.Name);
                         uow.HotelRepository.Add(model);//add
                     }
                     else
                     {
                         msg = "Updated Successfully";
+                        model.UserName = User.FindFirstValue(ClaimTypes.Name);
                         uow.HotelRepository.Update(model);//update
                     }
                     bool status = await uow.SaveAsync();
