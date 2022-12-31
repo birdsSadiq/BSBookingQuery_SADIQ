@@ -1,0 +1,75 @@
+﻿@model IEnumerable<Booking.Model.Hotel>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Hotel List</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">City</label>
+            <select name="sCity" id="sCity" class="form-control" asp-items="ViewBag.City"></select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">Country</label>
+            <select name="sCountry" id="sCountry" class="form-control" asp-items="ViewBag.Country"></select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">Rating</label>
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="number" name="sRF" id="sRF" class="form-control" /> TO
+                </div>
+                <div class="col-md-2">
+                    TO
+                </div>
+                <div class="col-md-5">
+                    <input type="number" name="sRT" id="sRT" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <input type="button" id="btnSearch" value="Search" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
+
+<div id="dvViewAll">
+    @await Html.PartialAsync("_viewAll",Model)
+</div>
+
+@section scripts{
+    <script>
+        $(document).on('click', '#btnSearch', function() {
+
+            var rf = 0;
+            var rt = 0;
+            var city = $('#sCity').val();
+            var country = $('#sCountry').val();
+            if ($.isNumeric($('#rf').val())) { rf = parseInt($('#rf').val()); }
+            if ($.isNumeric($('#rt').val())) { rt = parseInt($('#rt').val()); }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetSearchList")',
+                data: new FormData(form),
+                data: { city: city, country: country, rf: rf, rt: rt },
+                success: function(res) {
+                    $('#dvViewAll').html(res.html);
+                },
+                error: function(err) {
+                    console.log(err)
+                }
+            })
+
+        });
+    </script>
+
+}

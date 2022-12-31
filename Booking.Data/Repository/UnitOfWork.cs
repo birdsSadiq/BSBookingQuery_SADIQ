@@ -8,6 +8,7 @@ namespace Booking.Data.Repository
 {
     public interface IUnitOfWork
     {
+        IHotelRepository HotelRepository { get; }
         IDemoRepository DemoRepository { get; }
         Task<bool> SaveAsync();
     }
@@ -15,6 +16,7 @@ namespace Booking.Data.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext dc;
+        public IHotelRepository HotelRepository => new HotelRepository(dc);
         public IDemoRepository DemoRepository => new DemoRepository(dc);
         public UnitOfWork(ApplicationDbContext dc)
         {

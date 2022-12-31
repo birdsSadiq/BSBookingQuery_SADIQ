@@ -15,10 +15,12 @@ namespace Booking.Model
         public int Id { get; set; }
 
         #region HotelId fk
+
+        [Display(Name = "Hotel")]
         public int? HotelId { get; set; }
 
         [ForeignKey("HotelId")]
-        public virtual Hotel Hotel { get; set; } = new();
+        public Hotel Hotel { get; set; }
         #endregion
 
         #region Name
@@ -38,6 +40,6 @@ namespace Booking.Model
         public DateTime EntryDateTime { get; set; }
         #endregion
 
-        public virtual ICollection<HotelCommentReply> HotelCommentReplies { get; set; }
+        public virtual ICollection<HotelCommentReply> HotelCommentReplies { get; set; } = new HashSet<HotelCommentReply>();
     }
 }

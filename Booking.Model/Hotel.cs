@@ -62,6 +62,6 @@ namespace Booking.Model
         }
         #endregion
 
-        public virtual ICollection<HotelComment> HotelComments { get; set; }
+        public virtual ICollection<HotelComment> HotelComments { get; set; }= new HashSet<HotelComment>();
     }
 }

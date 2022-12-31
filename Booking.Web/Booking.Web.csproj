@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -15,11 +15,33 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Views\HotelCommentReply\Create.cshtml" />
+    <None Include="Views\HotelCommentReply\Delete.cshtml" />
+    <None Include="Views\HotelCommentReply\Details.cshtml" />
+    <None Include="Views\HotelCommentReply\Edit.cshtml" />
+    <None Include="Views\HotelCommentReply\Index.cshtml" />
+    <None Include="Views\HotelComment\Create.cshtml" />
+    <None Include="Views\HotelComment\Delete.cshtml" />
+    <None Include="Views\HotelComment\Details.cshtml" />
+    <None Include="Views\HotelComment\Edit.cshtml" />
+    <None Include="Views\HotelComment\Index.cshtml" />
+    <None Include="Views\Hotel\Create.cshtml" />
+    <None Include="Views\Hotel\Delete.cshtml" />
+    <None Include="Views\Hotel\Details.cshtml" />
+    <None Include="Views\Hotel\Edit.cshtml" />
+    <None Include="Views\Hotel\Index.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.11" />
   </ItemGroup>
 
   <ItemGroup>
